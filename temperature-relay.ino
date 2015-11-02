@@ -2,6 +2,12 @@
 #include "elapsedMillis.h"
 #include <list>
 
+#define SENSOR_ADDR_SIZE 8
+#define SCAN_INTERVAL 60000
+#define TEMP_INTERVAL 10000
+#define BLINK_INTERVAL 5000
+#define POWER_INTERVAL 120000
+
 elapsedMillis scanTimeElapsed;
 elapsedMillis tempTimeElapsed;
 elapsedMillis blinkTimeElapsed;
@@ -14,18 +20,13 @@ int powertail = D5;
 float temperature;
 float minuteAverage;
 std::list<float> temperatures(6);
-float tempThreshold = (float)62;
+float tempThreshold = 62.0F;
 bool power = false;
 boolean ledState = LOW;
 
-#define SCAN_INTERVAL 60000
-#define TEMP_INTERVAL 10000
-#define BLINK_INTERVAL 5000
-#define POWER_INTERVAL 120000
-
 struct Sensor {
   int id = 0;
-  byte addr[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  byte addr[SENSOR_ADDR_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0};
   byte type = '\0';
 };
 
@@ -178,17 +179,18 @@ void debugPublish(const char message[]) {
 }
 
 bool findAndValidateDeviceAddress(uint8_t *addr) {
+  bool success = true;
   if ( !ds.search(addr)) {
     ds.reset_search();
     delay(250);
-    return false;
+    success = false;
   }
   
-  if (OneWire::crc8(addr, 7) != addr[7]) {
+  if (success && OneWire::crc8(addr, 7) != addr[7]) {
     debugPublish("CRC is not valid!");
-    return false;
+    success = false;
   }
-  return true;
+  return success;
 }
 
 bool readData(byte data[12]) {
@@ -214,7 +216,7 @@ void findSensors(struct Sensor *sensors, int num_sensors) {
     type_s = chipType(addr[0]);
     sensors[sensor_id].id = sensor_id + 1;
     sensors[sensor_id].type = type_s;
-    memcpy(&sensors[sensor_id].addr, &addr, sizeof(addr));
+    memcpy(&sensors[sensor_id].addr, &addr, SENSOR_ADDR_SIZE);
 
     const char* name = getChipName(sensors[sensor_id].type);
     char sensorMessage[75];
