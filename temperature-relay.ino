@@ -114,20 +114,17 @@ byte chipType(byte a) {
   return type_s;
 }
 
-void chipName(byte a, char* name) {
-  switch (a) {
-    case 0:
-      strcpy(name, "DS18S20 or DS1822");
-      break;
-    case 1:
-      strcpy(name, "DS18S20");
-      break;
-    case 2:
-      strcpy(name, "DS2438");
-      break;
-    default:
-      strcpy(name, "Unknown");
+const char* CHIP_NAME[] = { "DS18S20 or DS1822", "DS18S20", "DS2438", "Unknown" };
+
+const char* getChipName(byte val) {
+  int index = (int)val;
+  const char* chipName;
+  if( index < 0 || index > 2 ) {
+    chipName = CHIP_NAME[3];
+  }  else {
+    chipName = CHIP_NAME[index];
   }
+  return chipName;
 }
 
 float parseTempValue(byte data[12], byte type_s) {
@@ -219,8 +216,7 @@ void findSensors(struct Sensor *sensors, int num_sensors) {
     sensors[sensor_id].type = type_s;
     memcpy(&sensors[sensor_id].addr, &addr, sizeof(addr));
 
-    char name[18];
-    chipName(sensors[sensor_id].type, name);
+    const char* name = getChipName(sensors[sensor_id].type);
     char sensorMessage[75];
     sprintf(
       sensorMessage,
