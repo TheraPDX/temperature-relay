@@ -64,21 +64,19 @@ int adjustPower(String command) {
 }
 
 void turnOnPower() {
-  if(power == true) {
-    return;
+  if(power != true) {
+    power = true;
+    digitalWrite(powertail, HIGH);
+    publishPowerStatus();
   }
-  power = true;
-  digitalWrite(powertail, HIGH);
-  publishPowerStatus();
 }
 
 void turnOffPower() {
-  if(power == false) {
-    return;
+  if(power != false) {
+    power = false;
+    digitalWrite(powertail, LOW);
+    publishPowerStatus();
   }
-  power = false;
-  digitalWrite(powertail, LOW);
-  publishPowerStatus();
 }
 
 void publishPowerStatus() {
@@ -158,18 +156,20 @@ float parseTempValue(byte data[12], byte type_s) {
 }
 
 void publishTemp(float temp) {
-  char publishString[40];
+  char publishString[20];
   
-  sprintf(publishString,"%f", temp);
+  snprintf(publishString, 20,"%f", temp);
   Particle.publish("temperature", publishString);
+  Serial.print("Temp: ");
   Serial.println(publishString);
 }
 
 void publishAverage(float temp) {
-  char publishString[40];
+  char publishString[20];
   
-  sprintf(publishString,"%f", temp);
+  snprintf(publishString, 20,"%f", temp);
   Particle.publish("minute_average", publishString);
+  Serial.print("Average: ");
   Serial.println(publishString);
 }
 
@@ -195,15 +195,16 @@ bool findAndValidateDeviceAddress(uint8_t *addr) {
 
 bool readData(byte data[12]) {
   byte i;
+  bool success = false;
   
   for ( i = 0; i < 9; i++) {           // we need 9 bytes
     data[i] = ds.read();
   }
   
   if(0xff == data[5] && 0x10 == data[7] && (OneWire::crc8(data, 8) == data[8])) {
-    return true;
+    success = true;
   }
-  return false;
+  return success;
 }
 
 void findSensors(struct Sensor *sensors, int num_sensors) {
@@ -220,8 +221,9 @@ void findSensors(struct Sensor *sensors, int num_sensors) {
 
     const char* name = getChipName(sensors[sensor_id].type);
     char sensorMessage[75];
-    sprintf(
+    snprintf(
       sensorMessage,
+      75,
       "Sensor #%i, Type: %i - %s, Address: %x %x %x %x %x %x %x %x",
       sensors[sensor_id].id,
       sensors[sensor_id].type,
@@ -245,16 +247,18 @@ void findSensors(struct Sensor *sensors, int num_sensors) {
 float averageTemperatures(std::list<float> temperatures) {
   float accum = 0;
   int count = 0;
+  float result = 0;
+
   for (std::list<float>::iterator it=temperatures.begin(); it != temperatures.end(); ++it) {
     if(*it > 0) {
       accum += *it;
       count++;
     }
   }
-  if (count == 0) {
-    return 0;
+  if (count > 0) {
+    result = accum/count;
   }
-  return accum/count;
+  return result;
 }
 
 void readTemperatures(struct Sensor *sensors, int num_sensors) {
@@ -285,7 +289,7 @@ void readTemperatures(struct Sensor *sensors, int num_sensors) {
     
     if(fahrenheit < (float)-30 || fahrenheit > (float)120) {
       char error[40];
-      sprintf(error, "Invalid Temperature: %f", fahrenheit);
+      snprintf(error, 40, "Invalid Temperature: %f", fahrenheit);
       debugPublish(error);
       
       continue;
