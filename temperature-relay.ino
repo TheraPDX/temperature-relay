@@ -18,10 +18,10 @@ float tempThreshold = (float)62;
 bool power = false;
 boolean ledState = LOW;
 
-unsigned int scanInterval = 60000;
-unsigned int tempInterval = 10000;
-unsigned int blinkInterval = 5000;
-unsigned int powerInterval = 120000;
+#define SCAN_INTERVAL 60000
+#define TEMP_INTERVAL 10000
+#define BLINK_INTERVAL 5000
+#define POWER_INTERVAL 120000
 
 struct Sensor {
   int id = 0;
@@ -303,23 +303,23 @@ void readTemperatures(struct Sensor *sensors, int num_sensors) {
 }
 
 void loop(void) {
-  if (blinkTimeElapsed > blinkInterval) {
+  if (blinkTimeElapsed > BLINK_INTERVAL) {
     ledState = !ledState; 
     digitalWrite(led1, ledState);
     blinkTimeElapsed = 0;
   }
   
-  if (scanTimeElapsed > scanInterval) {
+  if (scanTimeElapsed > SCAN_INTERVAL) {
     scanTimeElapsed = 0;
     findSensors(sensors, num_sensors);
   }
 
-  if (tempTimeElapsed > tempInterval) {
+  if (tempTimeElapsed > TEMP_INTERVAL) {
     tempTimeElapsed = 0;
     readTemperatures(sensors, num_sensors);
   }
 
-  if (powerTimeElapsed > powerInterval) {
+  if (powerTimeElapsed > POWER_INTERVAL) {
     powerTimeElapsed = 0;
 
     if(minuteAverage > tempThreshold) {
