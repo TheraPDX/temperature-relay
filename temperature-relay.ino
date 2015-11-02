@@ -129,6 +129,8 @@ void loop(void) {
 
     Serial.print("Average Temp: ");
     Serial.println(sensors.minute_average);
+    publishAverage(sensors.minute_average);
+    publishTemp(sensors.temp);
   }
 
   if (powerTimeElapsed > POWER_INTERVAL) {
