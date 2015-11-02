@@ -2,6 +2,8 @@
 #include "elapsedMillis.h"
 #include <list>
 
+using namespace std;
+
 #define SENSOR_ADDR_SIZE 8
 #define SCAN_INTERVAL 60000
 #define TEMP_INTERVAL 10000
@@ -19,7 +21,7 @@ int powertail = D5;
 
 float temperature;
 float minuteAverage;
-std::list<float> temperatures(6);
+list<float> temperatures(6);
 float tempThreshold = 62.0F;
 bool power = false;
 boolean ledState = LOW;
@@ -244,12 +246,12 @@ void findSensors(struct Sensor *sensors, int num_sensors) {
   ds.reset();
 }
 
-float averageTemperatures(std::list<float> temperatures) {
+float averageTemperatures(list<float> temperatures) {
   float accum = 0;
   int count = 0;
   float result = 0;
 
-  for (std::list<float>::iterator it=temperatures.begin(); it != temperatures.end(); ++it) {
+  for (list<float>::iterator it=temperatures.begin(); it != temperatures.end(); ++it) {
     if(*it > 0) {
       accum += *it;
       count++;
