@@ -2,6 +2,8 @@
 #include "Sensor.h"
 #include "Sensors.h"
 
+#include <algorithm>
+
 const char* CHIP_NAME[] = { "DS18S20 or DS1822", "DS18S20", "DS2438", "Unknown" };
 
 const char* getChipName(byte val) {
@@ -57,38 +59,29 @@ bool findAndValidateDeviceAddress(uint8_t *addr, OneWire &ds) {
   return success;
 }
 
-float Sensors::averageTemperatures() {
-  float accum = 0;
-  int count = 0;
-  float result = 0;
+template<typename InputIt, typename MemberType>
+float averageGreaterThanZero(InputIt&& begin, InputIt&& end, MemberType Sensor::*var) {
+  using value_type = typename iterator_traits<InputIt>::value_type;
 
-  for (list<Sensor>::const_iterator it=sensors.begin(); it != sensors.end(); ++it) {
-    if(it->temp > 0) {
-      accum += it->temp;
-      count++;
+  unsigned int count = 0;
+  float total = 0;
+
+  for_each(forward<InputIt>(begin), forward<InputIt>(end), [var, &count, &total](const value_type& x) {
+    if(x.*var > 0) {
+      total += x.*var;
+      ++count;
     }
-  }
-  if (count > 0) {
-    result = accum/count;
-  }
-  return result;
+  });
+
+  return count == 0 ? 0 : total / count;
+}
+
+float Sensors::averageTemperatures() {
+  return averageGreaterThanZero(begin(sensors), end(sensors), &Sensor::temp);
 }
 
 float Sensors::minuteAverageTemperatures() {
-  float accum = 0;
-  int count = 0;
-  float result = 0;
-
-  for (list<Sensor>::const_iterator it=sensors.begin(); it != sensors.end(); ++it) {
-    if(it->minute_average > 0) {
-      accum += it->minute_average;
-      count++;
-    }
-  }
-  if (count > 0) {
-    result = accum/count;
-  }
-  return result;
+  return averageGreaterThanZero(begin(sensors), end(sensors), &Sensor::minute_average);
 }
 
 void Sensors::read() {
