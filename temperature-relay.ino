@@ -45,16 +45,17 @@ void helloCmd(WebServer &server, WebServer::ConnectionType type, char *, bool){
   /* server.httpSuccess(); */
   server.httpSuccess("text/plain; version=0.0.4");
   if (type != WebServer::HEAD) {
-    char s_temp[85];
-    char s_average_temp[110];
+    char s_temp[75];
+    char s_average_temp[75];
     char s_power[50];
     char s_freemem[110];
     uint32_t freemem;
 
     freemem = System.freeMemory();
 
-    snprintf(s_temp, 85,"# TYPE temp_degrees gauge\ntemp_degrees %.4f %li000\n\n", temperature, Time.now());
-    snprintf(s_average_temp, 110, "# TYPE average_temp_degrees gauge\naverage_temp_degrees %.4f %li000\n\n", minuteAverage, Time.now());
+    server << "# TYPE temp_degrees gauge\n";
+    snprintf(s_temp, 75,"temp_degrees{timespan=\"none\"} %.4f %li000\n", temperature, Time.now());
+    snprintf(s_average_temp, 75, "temp_degrees{timespan=\"minute\"} %.4f %li000\n\n", minuteAverage, Time.now());
     snprintf(s_power, 50, "# TYPE heater gauge\nheater %i %li000\n\n", power, Time.now());
     snprintf(s_freemem, 110, "# Type free_mem_bytes\nfree_mem_bytes %lu %li000\n\n", freemem, Time.now());
 
