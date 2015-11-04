@@ -18,26 +18,19 @@ const char* getChipName(byte val) {
 
 byte chipType(byte a) {
   byte type_s;
-  // the first ROM byte indicates which chip
   switch (a) {
     case 0x10:
-      //debugPublish("Chip = DS18S20");  // or old DS1820
       type_s = 1;
       break;
     case 0x28:
-      //debugPublish("Chip = DS18B20");
       type_s = 0;
       break;
     case 0x22:
-      //debugPublish("Chip = DS1822");
       type_s = 0;
       break;
     case 0x26:
-      //debugPublish("Chip = DS2438");
       type_s = 2;
       break;
-    // default:
-    //   debugPublish("Device is not a DS18x20 family device.");
   }
   return type_s;
 }
@@ -52,7 +45,6 @@ bool findAndValidateDeviceAddress(uint8_t *addr, OneWire &ds) {
     success = false;
   } else if (OneWire::crc8(addr, 7) != addr[7]) {
     Serial.println("Sensor CRC is not valid");
-    // debugPublish("CRC is not valid!");
     success = false;
   }
   return success;
@@ -77,6 +69,14 @@ void Sensors::read() {
   minute_average = minuteAverageTemperatures();
 }
 
+bool isByteArrayEmpty(byte b[]) {
+  bool empty = true;
+  for(int i = 0; empty == true && i < sizeof(b); i++) { 
+    if(b[i] != 0x00) empty = false;
+  }
+  return empty;
+}
+
 void Sensors::scan() {
   byte type_s;
   byte addr[SENSOR_ADDR_SIZE];
@@ -84,42 +84,50 @@ void Sensors::scan() {
   int sensor_id = 1;
   bool found = false;
 
+  // Zero out all the sensor addresses;
   for(int i = 0; i < MAX_SENSORS; i++){
     for(int j = 0; j < SENSOR_ADDR_SIZE; j++) {
       sensorAddrs[i][j] = 0x00;
     }
   }
 
-  // sensors.clear();
-
+  // Read up to 10 sensors off the bus
   while(sensor_id <= MAX_SENSORS && findAndValidateDeviceAddress(addr, ds)) {
     memcpy(sensorAddrs[sensor_id], &addr, SENSOR_ADDR_SIZE);
+  }
+
+  // For each new sensor read, add it to the sensors list if it doesn't exist
+  for(int i = 0; i < MAX_SENSORS; i++) {
+    if(isByteArrayEmpty(sensorAddrs[i])) continue;
 
     found = false;
     for(list<Sensor>::const_iterator iter = sensors.begin(); iter != sensors.end(); ++iter) {
-      if(compareSensorAddresses(addr, iter->addr)) {
+      if(compareSensorAddresses(sensorAddrs[i], iter->addr)) {
         found = true;
       }
     }
 
-    if(!found) {
-      Sensor sensor = Sensor(ds);
-
-      type_s = chipType(addr[0]);
-      
-      sensor.id = sensor_id;
-      Serial.print("SensorID: ");
-      Serial.print(sensor.id);
-      sensor.type = type_s;
-      Serial.print("    Sensor Type: ");
-      Serial.print(sensor.type);
-      Serial.println();
-      memcpy(&sensor.addr, &addr, SENSOR_ADDR_SIZE);
-
-      sensors.push_front(sensor);
-    } else {
+    if(found) {
       Serial.println("Sensor Already Found");
+      sensor_id++;
+      continue;
     }
+
+    Sensor sensor = Sensor(ds);
+
+    type_s = chipType(sensorAddrs[i][0]);
+    
+    sensor.id = sensor_id;
+    sensor.type = type_s;
+
+    Serial.print("SensorID: ");
+    Serial.print(sensor.id);
+    Serial.print("    Sensor Type: ");
+    Serial.println(sensor.type);
+
+    memcpy(&sensor.addr, &sensorAddrs[i], SENSOR_ADDR_SIZE);
+
+    sensors.push_front(sensor);
 
     sensor_id++;
   }
@@ -130,25 +138,19 @@ void Sensors::scan() {
 
     found = false;
     for(int i = 0; i < MAX_SENSORS; i++) {
-      if(
-          sensorAddrs[i][0] == 0x00 &&
-          sensorAddrs[i][1] == 0x00 &&
-          sensorAddrs[i][2] == 0x00 &&
-          sensorAddrs[i][3] == 0x00 &&
-          sensorAddrs[i][4] == 0x00 &&
-          sensorAddrs[i][5] == 0x00 &&
-          sensorAddrs[i][6] == 0x00 &&
-          sensorAddrs[i][7] == 0x00
-        ) continue;
+      if(isByteArrayEmpty(sensorAddrs[i])) continue;
 
       if(compareSensorAddresses(sensorAddrs[i], it->addr)) {
         found = true;
       }
     }
-    if(!found) {
-      Serial.println("Found a Sensor to Remove");
-      sensors.remove(*it);
+
+    if(found) {
+      continue;
     }
+
+    Serial.println("Found a Sensor to Remove");
+    sensors.remove(*it);
   }
 
   ds.reset();

@@ -41,7 +41,7 @@ void startup() {
 
 STARTUP( startup() );
 
-void helloCmd(WebServer &server, WebServer::ConnectionType type, char *, bool){
+void metricsCmd(WebServer &server, WebServer::ConnectionType type, char *, bool){
   /* server.httpSuccess(); */
   server.httpSuccess("text/plain; version=0.0.4");
   if (type != WebServer::HEAD) {
@@ -77,8 +77,8 @@ void setup(void) {
   Particle.function("power", adjustPower);
   publishPowerStatus();
 
-  webserver.setDefaultCommand(&helloCmd);
-  webserver.addCommand("metrics", &helloCmd);
+  webserver.setDefaultCommand(&metricsCmd);
+  webserver.addCommand("metrics", &metricsCmd);
   webserver.begin();
 
   sensors.scan();
