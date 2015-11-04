@@ -80,27 +80,52 @@ void Sensors::read() {
 void Sensors::scan() {
   byte type_s;
   byte addr[SENSOR_ADDR_SIZE];
+  byte sensorAddrs[MAX_SENSORS][SENSOR_ADDR_SIZE];
   int sensor_id = 1;
+  bool found = false;
 
-  sensors.clear();
+  // sensors.clear();
 
-  while(findAndValidateDeviceAddress(addr, ds)) {
-    Sensor sensor = Sensor(ds);
+  while(sensor_id <= MAX_SENSORS && findAndValidateDeviceAddress(addr, ds)) {
+    memcpy(sensorAddrs[sensor_id], &addr, SENSOR_ADDR_SIZE);
 
-    type_s = chipType(addr[0]);
-    
-    sensor.id = sensor_id;
-    Serial.print("SensorID: ");
-    Serial.print(sensor.id);
-    sensor.type = type_s;
-    Serial.print("    Sensor Type: ");
-    Serial.print(sensor.type);
-    Serial.println();
-    memcpy(&sensor.addr, &addr, SENSOR_ADDR_SIZE);
+    found = false;
+    for(list<Sensor>::const_iterator iter = sensors.begin(); iter != sensors.end(); ++iter) {
+      if(compareSensorAddresses(addr, iter->addr)) {
+        found = true;
+      }
+    }
 
-    sensors.push_front(sensor);
+    if(!found) {
+      Sensor sensor = Sensor(ds);
+
+      type_s = chipType(addr[0]);
+      
+      sensor.id = sensor_id;
+      Serial.print("SensorID: ");
+      Serial.print(sensor.id);
+      sensor.type = type_s;
+      Serial.print("    Sensor Type: ");
+      Serial.print(sensor.type);
+      Serial.println();
+      memcpy(&sensor.addr, &addr, SENSOR_ADDR_SIZE);
+
+      sensors.push_front(sensor);
+    } else {
+      Serial.println("Sensor Already Found");
+    }
 
     sensor_id++;
+  }
+  
+  Serial.println("Removing Missing Sensors");
+  for(list<Sensor>::const_iterator iter = sensors.begin(); iter != sensors.end(); ++iter) {
+    for(int i = 0; i < MAX_SENSORS; i++) {
+      if(!compareSensorAddresses(sensorAddrs[i], iter->addr)) {
+        Serial.println("Found a Sensor to Remove");
+        sensors.remove(*iter);
+      }
+    }
   }
 
   ds.reset();

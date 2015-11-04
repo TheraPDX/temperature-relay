@@ -2,6 +2,16 @@
 #include "Sensor.h"
 #include "AverageTemps.h"
 
+bool compareSensorAddresses(const byte lhs[SENSOR_ADDR_SIZE], const byte rhs[SENSOR_ADDR_SIZE]) {
+  bool eql = true;
+  for(int i = 0; eql != false && i < SENSOR_ADDR_SIZE; i++) {
+    if(lhs[i] != rhs[i]) {
+      eql = false;
+    };
+  }
+  return eql;
+}
+
 float parseTempValue(byte data[12], byte type_s) {
   float celsius;
   

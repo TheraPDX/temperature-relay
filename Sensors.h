@@ -4,6 +4,9 @@
 #include "OneWire.h"
 #include "Sensor.h"
 #include <list>
+
+#define MAX_SENSORS 10
+
 using namespace std;
 
 class Sensors {

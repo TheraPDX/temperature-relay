@@ -7,6 +7,8 @@ using namespace std;
 
 #define SENSOR_ADDR_SIZE 8
 
+bool compareSensorAddresses(const byte lhs[8], const byte rhs[8]);
+
 class Sensor {
   OneWire & ds;
   list<float> temperatures;
@@ -24,6 +26,11 @@ class Sensor {
       list<float> temps(6);
       temperatures = temps;
     };
+
+    bool operator==(const Sensor& rhs) {
+      return compareSensorAddresses(addr, rhs.addr);
+    }
+
     void read();
 };
 
