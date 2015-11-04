@@ -7,8 +7,8 @@
 using namespace std;
 
 class Sensors {
-  list<Sensor> sensors;
   OneWire & ds;
+  list<Sensor> sensors;
 
   float averageTemperatures();
   float minuteAverageTemperatures();
@@ -18,6 +18,7 @@ class Sensors {
     void scan();
     void read();
     void debug();
+    int count();
     float temp;
     float minute_average;
 };

@@ -1,5 +1,6 @@
 #include "OneWire.h"
 #include "Sensor.h"
+#include "AverageTemps.h"
 
 float parseTempValue(byte data[12], byte type_s) {
   float celsius;
@@ -80,19 +81,5 @@ void Sensor::read() {
 }
 
 float Sensor::averageTemperatures() {
-  float accum = 0;
-  int count = 0;
-  float result = 0;
-
-  for (list<float>::const_iterator it=temperatures.begin(); it != temperatures.end(); ++it) {
-    if(*it > 0) {
-      accum += *it;
-      count++;
-    }
-  }
-  if (count > 0) {
-    result = accum/count;
-  }
-  return result;
+  return averageGreaterThanZero(begin(temperatures), end(temperatures));
 }
-

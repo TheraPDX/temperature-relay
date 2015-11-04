@@ -1,8 +1,7 @@
 #include "OneWire.h"
 #include "Sensor.h"
 #include "Sensors.h"
-
-#include <algorithm>
+#include "AverageTemps.h"
 
 const char* CHIP_NAME[] = { "DS18S20 or DS1822", "DS18S20", "DS2438", "Unknown" };
 
@@ -57,23 +56,6 @@ bool findAndValidateDeviceAddress(uint8_t *addr, OneWire &ds) {
     success = false;
   }
   return success;
-}
-
-template<typename InputIt, typename MemberType>
-float averageGreaterThanZero(InputIt&& begin, InputIt&& end, MemberType Sensor::*var) {
-  using value_type = typename iterator_traits<InputIt>::value_type;
-
-  unsigned int count = 0;
-  float total = 0;
-
-  for_each(forward<InputIt>(begin), forward<InputIt>(end), [var, &count, &total](const value_type& x) {
-    if(x.*var > 0) {
-      total += x.*var;
-      ++count;
-    }
-  });
-
-  return count == 0 ? 0 : total / count;
 }
 
 float Sensors::averageTemperatures() {
@@ -149,4 +131,8 @@ void Sensors::debug() {
     ); 
     Serial.println(sensorMessage); 
   }
+}
+
+int Sensors::count() {
+  return sensors.size();
 }

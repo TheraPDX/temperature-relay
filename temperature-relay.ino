@@ -45,21 +45,23 @@ void helloCmd(WebServer &server, WebServer::ConnectionType type, char *, bool){
   /* server.httpSuccess(); */
   server.httpSuccess("text/plain; version=0.0.4");
   if (type != WebServer::HEAD) {
-    /* P(helloMsg) = "<h1>Hello, World!</h1>"; */
     char s_temp[75];
-    snprintf(s_temp, 75,"# TYPE temp_degrees gauge\ntemp_degrees %.2f\n\n", temperature);
-
     char s_average_temp[100];
-    snprintf(s_average_temp, 100, "# TYPE average_temp_degrees gauge\naverage_temp_degrees %.2f\n\n", minuteAverage);
+    char s_power[40];
+    char s_freemem[100];
+    uint32_t freemem;
 
-    char s_power[30];
-    snprintf(s_power, 30, "# TYPE heater gauge\nheater %i\n\n", power);
+    freemem = System.freeMemory();
 
-    /* server.print(stats); */
+    snprintf(s_temp, 75,"# TYPE temp_degrees gauge\ntemp_degrees %.4f\n\n", temperature);
+    snprintf(s_average_temp, 100, "# TYPE average_temp_degrees gauge\naverage_temp_degrees %.4f\n\n", minuteAverage);
+    snprintf(s_power, 40, "# TYPE heater gauge\nheater %i\n\n", power);
+    snprintf(s_freemem, 100, "# Type free_mem_bytes\nfree_mem_bytes %i\n\n", freemem);
 
     server << s_temp;
     server << s_average_temp;
     server << s_power;
+    server << s_freemem;
   }
 }
 
@@ -163,18 +165,22 @@ void loop(void) {
     tempTimeElapsed = 0;
 
     Serial.println("## Reading Temps");
-    sensors.read();
+    if(sensors.count() > 0) {
+      sensors.read();
 
-    minuteAverage = sensors.minute_average;
-    temperature = sensors.temp;
+      minuteAverage = sensors.minute_average;
+      temperature = sensors.temp;
 
-    Serial.print("Temp: ");
-    Serial.println(temperature);
-    Serial.print("Average Temp: ");
-    Serial.println(minuteAverage);
+      Serial.print("Temp: ");
+      Serial.println(temperature);
+      Serial.print("Average Temp: ");
+      Serial.println(minuteAverage);
 
-    publishAverage(minuteAverage);
-    publishTemp(temperature);
+      publishAverage(minuteAverage);
+      publishTemp(temperature);
+    } else {
+      Serial.println("No Sensors to Read");
+    }
   }
 
   if (powerTimeElapsed > POWER_INTERVAL) {
