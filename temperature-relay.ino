@@ -45,18 +45,18 @@ void helloCmd(WebServer &server, WebServer::ConnectionType type, char *, bool){
   /* server.httpSuccess(); */
   server.httpSuccess("text/plain; version=0.0.4");
   if (type != WebServer::HEAD) {
-    char s_temp[75];
-    char s_average_temp[100];
-    char s_power[40];
-    char s_freemem[100];
+    char s_temp[85];
+    char s_average_temp[110];
+    char s_power[50];
+    char s_freemem[110];
     uint32_t freemem;
 
     freemem = System.freeMemory();
 
-    snprintf(s_temp, 75,"# TYPE temp_degrees gauge\ntemp_degrees %.4f\n\n", temperature);
-    snprintf(s_average_temp, 100, "# TYPE average_temp_degrees gauge\naverage_temp_degrees %.4f\n\n", minuteAverage);
-    snprintf(s_power, 40, "# TYPE heater gauge\nheater %i\n\n", power);
-    snprintf(s_freemem, 100, "# Type free_mem_bytes\nfree_mem_bytes %i\n\n", freemem);
+    snprintf(s_temp, 85,"# TYPE temp_degrees gauge\ntemp_degrees %.4f %li000\n\n", temperature, Time.now());
+    snprintf(s_average_temp, 110, "# TYPE average_temp_degrees gauge\naverage_temp_degrees %.4f %li000\n\n", minuteAverage, Time.now());
+    snprintf(s_power, 50, "# TYPE heater gauge\nheater %i %li000\n\n", power, Time.now());
+    snprintf(s_freemem, 110, "# Type free_mem_bytes\nfree_mem_bytes %lu %li000\n\n", freemem, Time.now());
 
     server << s_temp;
     server << s_average_temp;
@@ -121,7 +121,7 @@ void publishPowerStatus() {
 void publishTemp(float temp) {
   char publishString[20];
   
-  snprintf(publishString, 20,"%f", temp);
+  snprintf(publishString, 20,"%.4f", temp);
   Particle.publish("temperature", publishString);
   Serial.print("Temp: ");
   Serial.println(publishString);
@@ -130,7 +130,7 @@ void publishTemp(float temp) {
 void publishAverage(float temp) {
   char publishString[20];
   
-  snprintf(publishString, 20,"%f", temp);
+  snprintf(publishString, 20,"%.4f", temp);
   Particle.publish("minute_average", publishString);
   Serial.print("Average: ");
   Serial.println(publishString);
