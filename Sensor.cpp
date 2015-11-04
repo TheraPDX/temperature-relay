@@ -3,6 +3,18 @@
 #include "AverageTemps.h"
 
 bool compareSensorAddresses(const byte lhs[SENSOR_ADDR_SIZE], const byte rhs[SENSOR_ADDR_SIZE]) {
+  Serial.print("Comparing: ");
+  for(int i = 0; i < SENSOR_ADDR_SIZE; i++) {
+    Serial.print(lhs[i], HEX);
+    Serial.print(" ");
+  }
+  Serial.print("  VS  ");
+  for(int i = 0; i < SENSOR_ADDR_SIZE; i++) {
+    Serial.print(rhs[i], HEX);
+    Serial.print(" ");
+  }
+  Serial.println();
+
   bool eql = true;
   for(int i = 0; eql != false && i < SENSOR_ADDR_SIZE; i++) {
     if(lhs[i] != rhs[i]) {

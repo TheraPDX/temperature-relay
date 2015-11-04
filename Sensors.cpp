@@ -84,6 +84,12 @@ void Sensors::scan() {
   int sensor_id = 1;
   bool found = false;
 
+  for(int i = 0; i < MAX_SENSORS; i++){
+    for(int j = 0; j < SENSOR_ADDR_SIZE; j++) {
+      sensorAddrs[i][j] = 0x00;
+    }
+  }
+
   // sensors.clear();
 
   while(sensor_id <= MAX_SENSORS && findAndValidateDeviceAddress(addr, ds)) {
@@ -119,12 +125,29 @@ void Sensors::scan() {
   }
   
   Serial.println("Removing Missing Sensors");
-  for(list<Sensor>::const_iterator iter = sensors.begin(); iter != sensors.end(); ++iter) {
+  for(list<Sensor>::iterator it=sensors.begin(); it != sensors.end(); ++it) {
+    if(it->id == 0) continue;
+
+    found = false;
     for(int i = 0; i < MAX_SENSORS; i++) {
-      if(!compareSensorAddresses(sensorAddrs[i], iter->addr)) {
-        Serial.println("Found a Sensor to Remove");
-        sensors.remove(*iter);
+      if(
+          sensorAddrs[i][0] == 0x00 &&
+          sensorAddrs[i][1] == 0x00 &&
+          sensorAddrs[i][2] == 0x00 &&
+          sensorAddrs[i][3] == 0x00 &&
+          sensorAddrs[i][4] == 0x00 &&
+          sensorAddrs[i][5] == 0x00 &&
+          sensorAddrs[i][6] == 0x00 &&
+          sensorAddrs[i][7] == 0x00
+        ) continue;
+
+      if(compareSensorAddresses(sensorAddrs[i], it->addr)) {
+        found = true;
       }
+    }
+    if(!found) {
+      Serial.println("Found a Sensor to Remove");
+      sensors.remove(*it);
     }
   }
 
