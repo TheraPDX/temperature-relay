@@ -172,6 +172,7 @@ String tryExtractString(String str, const char* start, const char* end) {
 void fetchWeather() {
   String body;
   String tempStr;
+  float f_temp;
 
   Serial.println("Fetching Weather");
 
@@ -190,8 +191,11 @@ void fetchWeather() {
   tempStr = tryExtractString(body, "\"main\":{\"temp\":",",\"pressure\":");
   
   if (tempStr != NULL) {
-    outdoorTemp = tempStr.toFloat();
-    publishTemp("outdoor_temp", "Outdoor Temp: ", outdoorTemp);
+    f_temp = tempStr.toFloat();
+    if (f_temp !=0) {
+      outdoorTemp = f_temp;
+      publishTemp("outdoor_temp", "Outdoor Temp: ", outdoorTemp);
+    }
   }
 }
 
