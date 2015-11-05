@@ -137,30 +137,12 @@ void publishPowerStatus() {
   }
 }
 
-void publishTemp(float temp) {
+void publishTemp(const char pLabel[], const char sLabel[], float temp) {
   char publishString[20];
   
   snprintf(publishString, 20,"%.4f", temp);
-  Particle.publish("temperature", publishString);
-  Serial.print("Temp: ");
-  Serial.println(publishString);
-}
-
-void publishAverage(float temp) {
-  char publishString[20];
-  
-  snprintf(publishString, 20,"%.4f", temp);
-  Particle.publish("minute_average", publishString);
-  Serial.print("Average: ");
-  Serial.println(publishString);
-}
-
-void publishOutdoor(float temp) {
-  char publishString[20];
-  
-  snprintf(publishString, 20,"%.4f", temp);
-  Particle.publish("outdoor_temp", publishString);
-  Serial.print("Outdoor: ");
+  Particle.publish(pLabel, publishString);
+  Serial.print(sLabel);
   Serial.println(publishString);
 }
 
@@ -209,7 +191,7 @@ void fetchWeather() {
   
   if (tempStr != NULL) {
     outdoorTemp = tempStr.toFloat();
-    publishOutdoor(outdoorTemp);
+    publishTemp("outdoor_temp", "Outdoor Temp: ", outdoorTemp);
   }
 }
 
@@ -248,8 +230,8 @@ void loop(void) {
       Serial.print("Average Temp: ");
       Serial.println(minuteAverage);
 
-      publishAverage(minuteAverage);
-      publishTemp(temperature);
+      publishTemp("minute_average", "Average Temp: ", minuteAverage);
+      publishTemp("temperature", "Temp: ", temperature);
     } else {
       Serial.println("No Sensors to Read");
     }
