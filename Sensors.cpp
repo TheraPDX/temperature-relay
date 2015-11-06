@@ -19,18 +19,18 @@ const char* getChipName(byte val) {
 byte chipType(byte a) {
   byte type_s;
   switch (a) {
-    case 0x10:
-      type_s = 1;
-      break;
-    case 0x28:
-      type_s = 0;
-      break;
-    case 0x22:
-      type_s = 0;
-      break;
-    case 0x26:
-      type_s = 2;
-      break;
+  case 0x10:
+    type_s = 1;
+    break;
+  case 0x28:
+    type_s = 0;
+    break;
+  case 0x22:
+    type_s = 0;
+    break;
+  case 0x26:
+    type_s = 2;
+    break;
   }
   return type_s;
 }
@@ -71,7 +71,7 @@ void Sensors::read() {
 
 bool isByteArrayEmpty(byte b[]) {
   bool empty = true;
-  for(int i = 0; empty == true && i < sizeof(b); i++) { 
+  for(int i = 0; empty == true && i < sizeof(b); i++) {
     if(b[i] != 0x00) empty = false;
   }
   return empty;
@@ -85,7 +85,7 @@ void Sensors::scan() {
   bool found = false;
 
   // Zero out all the sensor addresses;
-  for(int i = 0; i < MAX_SENSORS; i++){
+  for(int i = 0; i < MAX_SENSORS; i++) {
     for(int j = 0; j < SENSOR_ADDR_SIZE; j++) {
       sensorAddrs[i][j] = 0x00;
     }
@@ -116,7 +116,7 @@ void Sensors::scan() {
     Sensor sensor = Sensor(ds);
 
     type_s = chipType(sensorAddrs[i][0]);
-    
+
     sensor.id = sensor_id;
     sensor.type = type_s;
 
@@ -131,7 +131,7 @@ void Sensors::scan() {
 
     sensor_id++;
   }
-  
+
   Serial.println("Removing Missing Sensors");
   for(list<Sensor>::iterator it=sensors.begin(); it != sensors.end(); ++it) {
     if(it->id == 0) continue;
@@ -157,29 +157,29 @@ void Sensors::scan() {
 }
 
 void Sensors::debug() {
-  Serial.println("## Sensors ##"); 
+  Serial.println("## Sensors ##");
   for (list<Sensor>::iterator it=sensors.begin(); it != sensors.end(); ++it) {
     if(it->id == 0) continue;
 
-    const char* name = getChipName(it->type); 
-    char sensorMessage[75]; 
-    snprintf( 
-      sensorMessage, 
-      75, 
-      "Sensor #%i, Type: %i - %s, Address: %x %x %x %x %x %x %x %x", 
-      it->id, 
-      it->type, 
-      name, 
-      it->addr[0], 
-      it->addr[1], 
-      it->addr[2], 
-      it->addr[3], 
-      it->addr[4], 
-      it->addr[5], 
-      it->addr[6], 
-      it->addr[7] 
-    ); 
-    Serial.println(sensorMessage); 
+    const char* name = getChipName(it->type);
+    char sensorMessage[75];
+    snprintf(
+      sensorMessage,
+      75,
+      "Sensor #%i, Type: %i - %s, Address: %x %x %x %x %x %x %x %x",
+      it->id,
+      it->type,
+      name,
+      it->addr[0],
+      it->addr[1],
+      it->addr[2],
+      it->addr[3],
+      it->addr[4],
+      it->addr[5],
+      it->addr[6],
+      it->addr[7]
+      );
+    Serial.println(sensorMessage);
   }
 }
 

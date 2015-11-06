@@ -18,14 +18,16 @@ using namespace std;
 #define WEATHER_ZIP "68522"
 
 template<class T>
-inline Print &operator <<(Print &obj, T arg)
-{ obj.print(arg); return obj; }
+inline Print &operator <<(Print &obj, T arg){
+  obj.print(arg);
+  return obj;
+}
 
 elapsedMillis scanTimeElapsed;
 elapsedMillis tempTimeElapsed;
 elapsedMillis blinkTimeElapsed;
-elapsedMillis powerTimeElapsed; 
-elapsedMillis weatherTimeElapsed; 
+elapsedMillis powerTimeElapsed;
+elapsedMillis weatherTimeElapsed;
 
 OneWire ds(D1);
 Sensors sensors(ds);
@@ -34,7 +36,7 @@ HttpClient http;
 
 http_header_t headers[] = {
   { "User-Agent", "curl/7.43.0"},
-  { "Accept" , "*/*"},
+  { "Accept", "*/*"},
   { NULL, NULL }
 };
 http_request_t request;
@@ -88,7 +90,7 @@ void metricsCmd(WebServer &server, WebServer::ConnectionType type, char *, bool)
 
 void setup(void) {
   Serial.begin(57600);
-  
+
   Particle.variable("power", power);
   Particle.variable("temperature", temperature);
   Particle.variable("min_average", minuteAverage);
@@ -141,7 +143,7 @@ void publishPowerStatus() {
 
 void publishTemp(const char pLabel[], const char sLabel[], float temp) {
   char publishString[20];
-  
+
   snprintf(publishString, 20,"%.4f", temp);
   Particle.publish(pLabel, publishString);
   Serial.print(sLabel);
@@ -191,7 +193,7 @@ void fetchWeather() {
 
   body = String(response.body);
   tempStr = tryExtractString(body, "\"main\":{\"temp\":",",\"pressure\":");
-  
+
   if (tempStr != NULL) {
     f_temp = tempStr.toFloat();
     if (f_temp !=0) {
@@ -207,11 +209,11 @@ void loop(void) {
   webserver.processConnection(buff, &len);
 
   if (blinkTimeElapsed > BLINK_INTERVAL) {
-    ledState = !ledState; 
+    ledState = !ledState;
     digitalWrite(led1, ledState);
     blinkTimeElapsed = 0;
   }
-  
+
   if (scanTimeElapsed > SCAN_INTERVAL) {
     scanTimeElapsed = 0;
 
