@@ -72,7 +72,7 @@ void Sensors::read() {
 
 bool isByteArrayEmpty(byte b[]) {
   bool empty = true;
-  for (int i = 0; empty == true && i < sizeof(b); i++) {
+  for (unsigned int i = 0; empty == true && i < sizeof(b); i++) {
     if (b[i] != 0x00) empty = false;
   }
   return empty;

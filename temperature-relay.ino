@@ -50,7 +50,7 @@ float minuteAverage;
 float outdoorTemp;
 double tempOnThreshold = 62.0;
 double tempOffThreshold = 68.0;
-bool power = false;
+int power = 0;
 boolean ledState = LOW;
 
 void startup() {
@@ -118,23 +118,23 @@ int adjustPower(String command) {
 }
 
 void turnOnPower() {
-  if(power != true) {
-    power = true;
+  if(power != 1) {
+    power = 1;
     digitalWrite(powertail, HIGH);
     publishPowerStatus();
   }
 }
 
 void turnOffPower() {
-  if(power != false) {
-    power = false;
+  if(power != 0) {
+    power = 0;
     digitalWrite(powertail, LOW);
     publishPowerStatus();
   }
 }
 
 void publishPowerStatus() {
-  if(power == true) {
+  if(power == 1) {
     Particle.publish("power", "On");
   } else {
     Particle.publish("power", "Off");
