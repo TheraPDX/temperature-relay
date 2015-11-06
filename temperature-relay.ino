@@ -46,7 +46,8 @@ int powertail = D5;
 float temperature;
 float minuteAverage;
 float outdoorTemp;
-float tempThreshold = 62.0F;
+double tempOnThreshold = 62.0;
+double tempOffThreshold = 68.0;
 bool power = false;
 boolean ledState = LOW;
 
@@ -91,7 +92,8 @@ void setup(void) {
   Particle.variable("power", power);
   Particle.variable("temperature", temperature);
   Particle.variable("min_average", minuteAverage);
-  Particle.variable("threshold", tempThreshold);
+  Particle.variable("temp_on", tempOnThreshold);
+  Particle.variable("temp_off", tempOffThreshold);
   Particle.function("power", adjustPower);
   publishPowerStatus();
 
@@ -246,9 +248,9 @@ void loop(void) {
 
     Serial.println("## Evaluating Power");
 
-    if(minuteAverage > tempThreshold) {
+    if(minuteAverage > tempOffThreshold) {
       turnOffPower();
-    } else {
+    } else if(minuteAverage < tempOnThreshold) {
       turnOnPower();
     }
   }
