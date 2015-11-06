@@ -48,8 +48,8 @@ int powertail = D5;
 float temperature;
 float minuteAverage;
 float outdoorTemp;
-double tempOnThreshold = 62.0;
-double tempOffThreshold = 68.0;
+double tempOnThreshold = 60.0;
+double tempOffThreshold = 65.0;
 int power = 0;
 boolean ledState = LOW;
 
