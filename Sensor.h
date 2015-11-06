@@ -1,9 +1,8 @@
-#ifndef Sensor_h
-#define Sensor_h
+#ifndef SENSOR_H_
+#define SENSOR_H_
 
 #include "OneWire.h"
 #include <list>
-using namespace std;
 
 #define SENSOR_ADDR_SIZE 8
 
@@ -11,7 +10,7 @@ bool compareSensorAddresses(const byte lhs[8], const byte rhs[8]);
 
 class Sensor {
   OneWire & ds;
-  list<float> temperatures;
+  std::list<float> temperatures;
 
   float averageTemperatures();
 
@@ -23,9 +22,9 @@ class Sensor {
     float minute_average;
 
     Sensor(OneWire &ds): ds(ds) {
-      list<float> temps(6);
+      std::list<float> temps(6);
       temperatures = temps;
-    };
+    }
 
     bool operator==(const Sensor& rhs) {
       return compareSensorAddresses(addr, rhs.addr);
@@ -34,4 +33,4 @@ class Sensor {
     void read();
 };
 
-#endif
+#endif // SENSOR_H_

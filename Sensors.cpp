@@ -2,13 +2,14 @@
 #include "Sensor.h"
 #include "Sensors.h"
 #include "AverageTemps.h"
+#include <list>
 
 const char* CHIP_NAME[] = { "DS18S20 or DS1822", "DS18S20", "DS2438", "Unknown" };
 
 const char* getChipName(byte val) {
-  int index = (int)val;
+  int index = static_cast<int>(val);
   const char* chipName;
-  if( index < 0 || index > 2 ) {
+  if ( index < 0 || index > 2 ) {
     chipName = CHIP_NAME[3];
   }  else {
     chipName = CHIP_NAME[index];
@@ -38,7 +39,7 @@ byte chipType(byte a) {
 bool findAndValidateDeviceAddress(uint8_t *addr, OneWire &ds) {
   bool success = true;
 
-  if ( !ds.search(addr)) {
+  if ( !ds.search(addr) ) {
     Serial.println("No More Sensors Found");
     ds.reset_search();
     delay(250);
@@ -59,8 +60,8 @@ float Sensors::minuteAverageTemperatures() {
 }
 
 void Sensors::read() {
-  for (list<Sensor>::iterator it=sensors.begin(); it != sensors.end(); ++it) {
-    if(it->id == 0) continue;
+  for (std::list<Sensor>::iterator it=sensors.begin(); it != sensors.end(); ++it) {
+    if (it->id == 0) continue;
 
     it->read();
   }
@@ -71,8 +72,8 @@ void Sensors::read() {
 
 bool isByteArrayEmpty(byte b[]) {
   bool empty = true;
-  for(int i = 0; empty == true && i < sizeof(b); i++) {
-    if(b[i] != 0x00) empty = false;
+  for (int i = 0; empty == true && i < sizeof(b); i++) {
+    if (b[i] != 0x00) empty = false;
   }
   return empty;
 }
@@ -85,29 +86,29 @@ void Sensors::scan() {
   bool found = false;
 
   // Zero out all the sensor addresses;
-  for(int i = 0; i < MAX_SENSORS; i++) {
-    for(int j = 0; j < SENSOR_ADDR_SIZE; j++) {
+  for (int i = 0; i < MAX_SENSORS; i++) {
+    for (int j = 0; j < SENSOR_ADDR_SIZE; j++) {
       sensorAddrs[i][j] = 0x00;
     }
   }
 
   // Read up to 10 sensors off the bus
-  while(sensor_id <= MAX_SENSORS && findAndValidateDeviceAddress(addr, ds)) {
+  while (sensor_id <= MAX_SENSORS && findAndValidateDeviceAddress(addr, ds)) {
     memcpy(sensorAddrs[sensor_id], &addr, SENSOR_ADDR_SIZE);
   }
 
   // For each new sensor read, add it to the sensors list if it doesn't exist
-  for(int i = 0; i < MAX_SENSORS; i++) {
-    if(isByteArrayEmpty(sensorAddrs[i])) continue;
+  for (int i = 0; i < MAX_SENSORS; i++) {
+    if (isByteArrayEmpty(sensorAddrs[i])) continue;
 
     found = false;
-    for(list<Sensor>::const_iterator iter = sensors.begin(); iter != sensors.end(); ++iter) {
-      if(compareSensorAddresses(sensorAddrs[i], iter->addr)) {
+    for (std::list<Sensor>::const_iterator iter = sensors.begin(); iter != sensors.end(); ++iter) {
+      if (compareSensorAddresses(sensorAddrs[i], iter->addr)) {
         found = true;
       }
     }
 
-    if(found) {
+    if (found) {
       Serial.println("Sensor Already Found");
       sensor_id++;
       continue;
@@ -133,19 +134,19 @@ void Sensors::scan() {
   }
 
   Serial.println("Removing Missing Sensors");
-  for(list<Sensor>::iterator it=sensors.begin(); it != sensors.end(); ++it) {
-    if(it->id == 0) continue;
+  for (std::list<Sensor>::iterator it=sensors.begin(); it != sensors.end(); ++it) {
+    if (it->id == 0) continue;
 
     found = false;
-    for(int i = 0; i < MAX_SENSORS; i++) {
-      if(isByteArrayEmpty(sensorAddrs[i])) continue;
+    for (int i = 0; i < MAX_SENSORS; i++) {
+      if (isByteArrayEmpty(sensorAddrs[i])) continue;
 
-      if(compareSensorAddresses(sensorAddrs[i], it->addr)) {
+      if (compareSensorAddresses(sensorAddrs[i], it->addr)) {
         found = true;
       }
     }
 
-    if(found) {
+    if (found) {
       continue;
     }
 
@@ -158,8 +159,8 @@ void Sensors::scan() {
 
 void Sensors::debug() {
   Serial.println("## Sensors ##");
-  for (list<Sensor>::iterator it=sensors.begin(); it != sensors.end(); ++it) {
-    if(it->id == 0) continue;
+  for (std::list<Sensor>::iterator it=sensors.begin(); it != sensors.end(); ++it) {
+    if (it->id == 0) continue;
 
     const char* name = getChipName(it->type);
     char sensorMessage[75];
@@ -177,8 +178,7 @@ void Sensors::debug() {
       it->addr[4],
       it->addr[5],
       it->addr[6],
-      it->addr[7]
-      );
+      it->addr[7]);
     Serial.println(sensorMessage);
   }
 }

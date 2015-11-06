@@ -1,5 +1,5 @@
-#ifndef Sensors_h
-#define Sensors_h
+#ifndef SENSORS_H_
+#define SENSORS_H_
 
 #include "OneWire.h"
 #include "Sensor.h"
@@ -7,17 +7,15 @@
 
 #define MAX_SENSORS 10
 
-using namespace std;
-
 class Sensors {
   OneWire & ds;
-  list<Sensor> sensors;
+  std::list<Sensor> sensors;
 
   float averageTemperatures();
   float minuteAverageTemperatures();
 
   public:
-    Sensors(OneWire &ds): ds(ds) {};
+    Sensors(OneWire &ds): ds(ds) {}
     void scan();
     void read();
     void debug();
@@ -26,4 +24,4 @@ class Sensors {
     float minute_average;
 };
 
-#endif
+#endif // SENSORS_H_
