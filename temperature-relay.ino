@@ -66,8 +66,10 @@ void metricsCmd(WebServer &server, WebServer::ConnectionType type, char *, bool)
     char s_temp[100];
     char s_average_temp[100];
     char s_outdoor_temp[100];
-    char s_power[50];
-    char s_freemem[110];
+    char s_power_on_temp[100];
+    char s_power_off_temp[100];
+    char s_power[25];
+    char s_freemem[90];
     uint32_t freemem;
 
     freemem = System.freeMemory();
@@ -75,14 +77,24 @@ void metricsCmd(WebServer &server, WebServer::ConnectionType type, char *, bool)
     server << "# TYPE temp_degrees gauge\n";
     snprintf(s_temp, 100,"temp_degrees{location=\"garage\",timespan=\"none\"} %.4f %li000\n", temperature, Time.now());
     snprintf(s_average_temp, 100, "temp_degrees{location=\"garage\",timespan=\"minute\"} %.4f %li000\n", minuteAverage, Time.now());
-    snprintf(s_outdoor_temp, 100, "temp_degrees{location=\"outdoors\",timespan=\"none\"} %.4f %li000\n\n", outdoorTemp, Time.now());
-    snprintf(s_power, 50, "# TYPE heater gauge\nheater %i %li000\n\n", power, Time.now());
-    snprintf(s_freemem, 110, "# Type free_mem_bytes\nfree_mem_bytes %lu %li000\n\n", freemem, Time.now());
+    snprintf(s_outdoor_temp, 100, "temp_degrees{location=\"outdoors\",timespan=\"none\"} %.4f %li000\n", outdoorTemp, Time.now());
+    snprintf(s_power_on_temp, 100, "temp_degrees{trigger=\"on\",timespan=\"none\"} %.4f %li000\n", tempOnThreshold, Time.now());
+    snprintf(s_power_off_temp, 100, "temp_degrees{trigger=\"off\",timespan=\"none\"} %.4f %li000\n\n", tempOffThreshold, Time.now());
 
     server << s_temp;
     server << s_average_temp;
     server << s_outdoor_temp;
+    server << s_power_on_temp;
+    server << s_power_off_temp;
+
+    server << "# TYPE heater gauge\n";
+    snprintf(s_power, 25, "heater %i %li000\n\n", power, Time.now());
+
     server << s_power;
+
+    server << "# Type free_mem_bytes\n";
+    snprintf(s_freemem, 90, "free_mem_bytes %lu %li000\n\n", freemem, Time.now());
+
     server << s_freemem;
   }
 }
@@ -96,7 +108,11 @@ void setup(void) {
   Particle.variable("min_average", minuteAverage);
   Particle.variable("temp_on", tempOnThreshold);
   Particle.variable("temp_off", tempOffThreshold);
+
   Particle.function("power", adjustPower);
+  Particle.function("setTempOn", setTempOn);
+  Particle.function("setTempOff", setTempOff);
+
   publishPowerStatus();
 
   webserver.setDefaultCommand(&metricsCmd);
@@ -115,6 +131,26 @@ int adjustPower(String command) {
     turnOffPower();
   }
   return 1;
+}
+
+int setTempOn(String temp) {
+  float f_temp = temp.toFloat();
+  if(f_temp > 0 && f_temp < tempOffThreshold) {
+    tempOnThreshold = f_temp;
+    return 1;
+  } else {
+    return -1;
+  }
+}
+
+int setTempOff(String temp) {
+  float f_temp = temp.toFloat();
+  if(f_temp > 0 && f_temp > tempOnThreshold) {
+    tempOffThreshold = f_temp;
+    return 1;
+  } else {
+    return -1;
+  }
 }
 
 void turnOnPower() {
