@@ -45,9 +45,9 @@ http_response_t response;
 int led1 = D7;
 int powertail = D5;
 
-float temperature;
-float minuteAverage;
-float outdoorTemp;
+double temperature;
+double minuteAverage;
+double outdoorTemp;
 double tempOnThreshold = 60.0;
 double tempOffThreshold = 65.0;
 int power = 0;
@@ -233,7 +233,7 @@ void fetchWeather() {
   if (tempStr != NULL) {
     f_temp = tempStr.toFloat();
     if (f_temp !=0) {
-      outdoorTemp = f_temp;
+      outdoorTemp = (double)f_temp;
       publishTemp("outdoor_temp", "Outdoor Temp: ", outdoorTemp);
     }
   }
@@ -266,8 +266,8 @@ void loop(void) {
     if(sensors.count() > 0) {
       sensors.read();
 
-      minuteAverage = sensors.minute_average;
-      temperature = sensors.temp;
+      minuteAverage = (double)sensors.minute_average;
+      temperature = (double)sensors.temp;
 
       Serial.print("Temp: ");
       Serial.println(temperature);
