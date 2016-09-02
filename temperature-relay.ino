@@ -44,6 +44,7 @@ http_response_t response;
 
 int led1 = D7;
 int powertail = D5;
+int iotrelay = D6;
 
 double temperature;
 double minuteAverage;
@@ -56,6 +57,7 @@ boolean ledState = LOW;
 void startup() {
   pinMode(led1, OUTPUT);
   pinMode(powertail, OUTPUT);
+  pinMode(iotrelay, OUTPUT);
 }
 
 STARTUP( startup() );
@@ -124,13 +126,14 @@ void setup(void) {
 }
 
 int adjustPower(String command) {
-  if(command == "on") {
+  if(command == "on" || command == "1") {
     turnOnPower();
-  }
-  if(command == "off") {
+    return 1;
+  } else if(command == "off" || command == "0") {
     turnOffPower();
+    return 1;
   }
-  return 1;
+  return -1;
 }
 
 int setTempOn(String temp) {
@@ -157,6 +160,7 @@ void turnOnPower() {
   if(power != 1) {
     power = 1;
     digitalWrite(powertail, HIGH);
+    digitalWrite(iotrelay, HIGH);
     publishPowerStatus();
   }
 }
@@ -165,6 +169,7 @@ void turnOffPower() {
   if(power != 0) {
     power = 0;
     digitalWrite(powertail, LOW);
+    digitalWrite(iotrelay, LOW);
     publishPowerStatus();
   }
 }
